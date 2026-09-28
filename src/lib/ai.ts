@@ -29,7 +29,7 @@ export type Reference = { category: string; content: string };
 // 读取范文库（用于生成时注入文风参考）
 export async function getReferences(): Promise<Reference[]> {
   const refs = await prisma.reference.findMany({
-    orderBy: { createdAt: "asc" },
+    orderBy: { createdAt: "desc" },
     take: 20,
   });
   return refs.map((r) => ({ category: r.category, content: r.content }));
