@@ -99,6 +99,16 @@ export default function Sidebar({ stories }: { stories: StoryItem[] }) {
 
       <div className="space-y-1 border-t border-zinc-800 p-2">
         <Link
+          href="/references"
+          className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+            pathname === "/references"
+              ? "bg-zinc-800 text-zinc-100"
+              : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
+          }`}
+        >
+          范文库
+        </Link>
+        <Link
           href="/tropes"
           className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
             pathname === "/tropes"

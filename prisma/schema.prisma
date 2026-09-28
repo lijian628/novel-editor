@@ -88,3 +88,11 @@ model AiProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// 范文库（爆款范文，生成时注入文风参考）
+model Reference {
+  id        String   @id @default(cuid())
+  category  String // 开头钩子 / 打脸 / 反转 / 对话 / 爽点场景
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+}

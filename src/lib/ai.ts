@@ -24,6 +24,26 @@ export function createClient(config: AiConfig) {
   return new OpenAI({ baseURL: config.baseUrl, apiKey: config.apiKey });
 }
 
+export type Reference = { category: string; content: string };
+
+// 读取范文库（用于生成时注入文风参考）
+export async function getReferences(): Promise<Reference[]> {
+  const refs = await prisma.reference.findMany({
+    orderBy: { createdAt: "asc" },
+    take: 20,
+  });
+  return refs.map((r) => ({ category: r.category, content: r.content }));
+}
+
+// 把范文拼成提示词片段
+export function buildStylePrompt(refs: Reference[]): string {
+  if (refs.length === 0) return "";
+  const lines = refs
+    .map((r, i) => `【范文${i + 1}｜${r.category}】\n${r.content}`)
+    .join("\n\n");
+  return `\n\n以下是几段爆款爽文范文，请严格模仿其文风和爽感节奏：\n${lines}\n`;
+}
+
 // 稳健解析模型输出的 JSON（模型可能输出 ```json 代码块或前后废话）
 export function parseJson<T>(text: string): T | null {
   const cleaned = text.replace(/```(?:json)?/gi, "").trim();
