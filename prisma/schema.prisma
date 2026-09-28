@@ -1,0 +1,90 @@
+// 短篇爽文编辑器 数据模型
+// 生成客户端：npx prisma generate
+// 迁移：npx prisma migrate dev
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 合集（可选，按主题/系列归组）
+model Collection {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  stories     Story[]
+}
+
+// 篇 —— 核心单位（短篇爽文）
+model Story {
+  id           String      @id @default(cuid())
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  title        String
+  content      String      @default("") @db.Text
+  summary      String?
+  tags         String[] // 爽点类型：打脸/逆袭/扮猪吃虎/系统/重生/复仇...
+  wordCount    Int         @default(0)
+  status       String      @default("draft") // draft / finished / published
+  sortOrder    Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  snapshots    StorySnapshot[]
+  markers      Marker[]
+
+  @@index([collectionId])
+}
+
+// 版本历史（防误删/丢稿）
+model StorySnapshot {
+  id        String   @id @default(cuid())
+  storyId   String
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([storyId])
+}
+
+// 爽点打点（Phase 2）
+model Marker {
+  id        String   @id @default(cuid())
+  storyId   String
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  type      String // 打脸/逆袭/身份揭晓/反转/付费钩子...
+  position  Int // 正文字符偏移
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([storyId])
+}
+
+// 钩子/爽点库（Phase 2）
+model Trope {
+  id        String   @id @default(cuid())
+  title     String
+  category  String // 开头钩子/打脸/反转/身份揭晓/爽点节奏...
+  content   String   @db.Text
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// AI 配置（Phase 3，用户自带 Key）
+model AiProfile {
+  id        String   @id @default(cuid())
+  name      String
+  baseUrl   String
+  model     String
+  apiKey    String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
